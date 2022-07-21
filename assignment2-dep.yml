@@ -1,0 +1,48 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-hello
+  namespace: assignment #namespace created for this assignment
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  replicas: 2 # create 2 pods
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginxdemos/hello #image name; pulled from docker hub
+        ports:
+        - containerPort: 80
+        livenessProbe: #check the pod health
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          tcpSocket:
+            port: 80
+        readinessProbe: #check whether traffic can be sent
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          tcpSocket:
+            port: 80
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-hello
+  namespace: assignment
+  labels:
+    app: nginx
+spec:
+  type: NodePort #service type; setup is done in local minikube environment
+  ports:
+  - port: 80
+    protocol: TCP
+    name: http
+  selector:
+    app: nginx
